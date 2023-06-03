@@ -1,0 +1,5 @@
+project = "[%PROJECT_NAME%]"
+environment = "[%ENVIRONMENT_NAME%]"
+location = "East US"
+inbox_container_name = "inbox"
+destination_file_share_name = "fileshare"
