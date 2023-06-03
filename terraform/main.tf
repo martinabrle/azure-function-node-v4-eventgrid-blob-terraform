@@ -22,11 +22,11 @@ resource "azurerm_resource_group" "resource_group" {
   location = var.location
 }
 
-resource "azurerm_eventgrid_topic" "sample_topic" {
-  name                = "${var.prefix}-egt"
+resource "azurerm_eventgrid_topic" "eventgrid_topic_blob" {
+  name                = "${var.project}${var.environment}-egt"
   location            = var.location
   resource_group_name = azurerm_resource_group.resource_group.name
-  identity = {
+  identity {
     type = "SystemAssigned"
   }
   tags = {
@@ -86,11 +86,13 @@ resource "azurerm_linux_function_app" "function_app" {
   storage_account_name        = azurerm_storage_account.function_storage_account.name
   storage_account_access_key  = azurerm_storage_account.function_storage_account.primary_access_key
   functions_extension_version = "~4"
+  deploy_zip = 
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                = azurerm_application_insights.application_insights.instrumentation_key,
     "APPLICATIONINSIGHTS_CONNECTION_STRING"         = azurerm_application_insights.application_insights.connection_string,
     "DESTINATION_STORAGE_ACCOUNT_CONNECTION_STRING" = azurerm_storage_account.destination_storage_account.primary_connection_string,
     "DESTINATION_STORAGE_ACCOUNT_CONNECTION_STRING" = azurerm_storage_share.destination_storage_account_share.name
+    "AzureWebJobsFeatureFlags"                      = "EnableWorkerIndexing"
   }
   site_config {
     app_scale_limit          = 1
@@ -117,14 +119,12 @@ resource "azurerm_linux_function_app" "function_app" {
     ]
   }
 }
-
-resource "azurerm_eventgrid_event_subscription" "eventgrid_subscription" {
-  name   = "${var.project}-${var.environment}-function-app-egsub"
-  scope  = azurerm_storage_account.inbox_storage_account.id
-  labels = ["azure-functions-event-grid-terraform"]
+resource "azurerm_eventgrid_event_subscription" "evtFileReceived" {
+  name       = "evtFileReceived"
+  scope      = azurerm_storage_account.inbox_storage_account.id
+  labels     = ["azure-functions-event-grid-terraform"]
   azure_function_endpoint {
-    function_id = azurerm_linux_function_app.function_app.id
-
+    function_id =  "${azurerm_linux_function_app.function_app.id}/functions/eventGridTrigger"
     # defaults, specified to avoid "no-op" changes when 'apply' is re-ran
     max_events_per_batch              = 1
     preferred_batch_size_in_kilobytes = 64
