@@ -22,10 +22,11 @@ resource "azurerm_resource_group" "resource_group" {
   location = var.location
 }
 
-resource "azurerm_eventgrid_topic" "eventgrid_topic_blob" {
+resource "azurerm_eventgrid_system_topic" "eventgrid_system_topic_blob" {
   name                = "${var.project}${var.environment}-egt"
   location            = var.location
   resource_group_name = azurerm_resource_group.resource_group.name
+  topic_type          = "Microsoft.Storage.StorageAccounts"
   identity {
     type = "SystemAssigned"
   }
@@ -118,12 +119,13 @@ resource "azurerm_linux_function_app" "function_app" {
     ]
   }
 }
-resource "azurerm_eventgrid_event_subscription" "evtFileReceived" {
-  name       = "evtFileReceived"
-  scope      = azurerm_storage_account.inbox_storage_account.id
-  labels     = ["azure-functions-event-grid-terraform"]
+resource "azurerm_eventgrid_system_topic_event_subscription" "evtFileReceived" {
+  name         = "evtFileReceived"
+  system_topic = azurerm_eventgrid_system_topic.eventgrid_system_topic_blob
+  # scope        = azurerm_storage_account.inbox_storage_account.id
+  # labels       = ["azure-functions-event-grid-terraform"]
   azure_function_endpoint {
-    function_id =  "${azurerm_linux_function_app.function_app.id}/functions/eventGridTrigger"
+    function_id = "${azurerm_linux_function_app.function_app.id}/functions/eventGridTrigger"
     # defaults, specified to avoid "no-op" changes when 'apply' is re-ran
     max_events_per_batch              = 1
     preferred_batch_size_in_kilobytes = 64
