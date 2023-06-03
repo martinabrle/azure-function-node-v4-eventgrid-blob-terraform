@@ -23,10 +23,11 @@ resource "azurerm_resource_group" "resource_group" {
 }
 
 resource "azurerm_eventgrid_system_topic" "eventgrid_system_topic_blob" {
-  name                = "${var.project}${var.environment}-egt"
-  location            = var.location
-  resource_group_name = azurerm_resource_group.resource_group.name
-  topic_type          = "Microsoft.Storage.StorageAccounts"
+  name                   = "${var.project}${var.environment}-egt"
+  location               = var.location
+  resource_group_name    = azurerm_resource_group.resource_group.name
+  source_arm_resource_id = azurerm_storage_account.inbox_storage_account.id
+  topic_type             = "Microsoft.Storage.StorageAccounts"
   identity {
     type = "SystemAssigned"
   }
@@ -120,8 +121,9 @@ resource "azurerm_linux_function_app" "function_app" {
   }
 }
 resource "azurerm_eventgrid_system_topic_event_subscription" "evtFileReceived" {
-  name         = "evtFileReceived"
-  system_topic = azurerm_eventgrid_system_topic.eventgrid_system_topic_blob.name
+  name                = "evtFileReceived"
+  resource_group_name = azurerm_resource_group.resource_group.name
+  system_topic        = azurerm_eventgrid_system_topic.eventgrid_system_topic_blob.name
   # scope        = azurerm_storage_account.inbox_storage_account.id
   # labels       = ["azure-functions-event-grid-terraform"]
   azure_function_endpoint {
