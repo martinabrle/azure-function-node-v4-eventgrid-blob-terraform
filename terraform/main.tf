@@ -121,7 +121,7 @@ resource "azurerm_linux_function_app" "function_app" {
 }
 resource "azurerm_eventgrid_system_topic_event_subscription" "evtFileReceived" {
   name         = "evtFileReceived"
-  system_topic = azurerm_eventgrid_system_topic.eventgrid_system_topic_blob
+  system_topic = azurerm_eventgrid_system_topic.eventgrid_system_topic_blob.name
   # scope        = azurerm_storage_account.inbox_storage_account.id
   # labels       = ["azure-functions-event-grid-terraform"]
   azure_function_endpoint {
