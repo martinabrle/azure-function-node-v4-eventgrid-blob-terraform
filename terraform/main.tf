@@ -86,7 +86,6 @@ resource "azurerm_linux_function_app" "function_app" {
   storage_account_name        = azurerm_storage_account.function_storage_account.name
   storage_account_access_key  = azurerm_storage_account.function_storage_account.primary_access_key
   functions_extension_version = "~4"
-  deploy_zip = 
   app_settings = {
     "APPINSIGHTS_INSTRUMENTATIONKEY"                = azurerm_application_insights.application_insights.instrumentation_key,
     "APPLICATIONINSIGHTS_CONNECTION_STRING"         = azurerm_application_insights.application_insights.connection_string,
